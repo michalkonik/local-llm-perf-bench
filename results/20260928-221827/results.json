@@ -1,7 +1,7 @@
 {
   "run_id": "20260928-221827",
   "config_name": "gpt-oss-120b-3gpu",
-  "config_file": "/home/mkoniu/Desktop/github_repos/llm-bench-harness/configs/gpt-oss-120b-3gpu.json",
+  "config_file": "~/Desktop/github_repos/llm-bench-harness/configs/gpt-oss-120b-3gpu.json",
   "environment": {
     "timestamp": "2026-09-28 22:18:27 CEST",
     "gpu_index": 0,
