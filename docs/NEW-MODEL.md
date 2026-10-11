@@ -131,7 +131,7 @@ http://127.0.0.1:8090/v1
 (Port 8090 by default, so it never clashes with a model server such as llama-swap on 8080; `AGENT_PORT`
 changes it. `AGENT_THREADS` defaults to half the CPU threads.) A ready-made orchestrator with an
 allowlist of commands, which also drives the quality bench, lives in
-[local-llm-bench-results/orchestrator](https://github.com/michal-konik-human/local-llm-bench-results/tree/main/orchestrator).
+[local-llm-bench-results/orchestrator](https://github.com/michal-koniu/local-llm-bench-results/tree/main/orchestrator).
 
 Give it [`AGENT-PLAYBOOK.md`](AGENT-PLAYBOOK.md) as its **system prompt**. That file is
 written for a small model: step-by-step procedure, decision tables instead of open-ended
@@ -171,6 +171,6 @@ config — syntax and worked examples in the repo README and `configs/`.
 ## 6. Then measure how good it is
 
 Speed tells you whether a model is usable; it doesn't tell you whether it is any good at your
-job. The sibling repo [local-llm-quality-bench](https://github.com/michal-konik-human/local-llm-quality-bench)
+job. The sibling repo [local-llm-quality-bench](https://github.com/michal-koniu/local-llm-quality-bench)
 grades the same model, served through the same llama-swap, on agent and assistant tasks in
 Polish and English. Its leaderboard links back to the decode speed measured here.

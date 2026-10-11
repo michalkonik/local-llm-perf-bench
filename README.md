@@ -8,13 +8,13 @@ numbers**, and tells you when a result is not trustworthy. Works with **any GGUF
 It was developed on 4× Radeon AI PRO R9700 (128 GB VRAM) and can be driven by you or by a
 local agent.
 
-> **Speed is half the answer.** Its sibling, **[local-llm-quality-bench](https://github.com/michal-konik-human/local-llm-quality-bench)**,
+> **Speed is half the answer.** Its sibling, **[local-llm-quality-bench](https://github.com/michal-koniu/local-llm-quality-bench)**,
 > measures how *good* the same models are as agents and assistants in Polish and English:
 > tool calling, multi-step tasks, instruction following and writing. Together they answer
 > *which model, at which settings, for which job*.
 >
 > **Results** from the reference rig live in their own repo,
-> **[local-llm-bench-results](https://github.com/michal-konik-human/local-llm-bench-results)**. This repo is
+> **[local-llm-bench-results](https://github.com/michal-koniu/local-llm-bench-results)**. This repo is
 > the tool: point it at your own GPUs and models and keep your own results.
 >
 > *(Renamed from `llm-bench-harness` in October 2026; old links redirect.)*
@@ -33,10 +33,10 @@ Four repos, one job each:
 
 | Repo | What it is | It changes when… |
 |---|---|---|
-| [local-llm-perf-bench](https://github.com/michal-konik-human/local-llm-perf-bench) | **Tool**: how fast a model runs (llama.cpp, any GGUF, 1–n GPUs) | the way speed is measured changes |
-| [local-llm-quality-bench](https://github.com/michal-konik-human/local-llm-quality-bench) | **Tool**: how good a model is as an agent/assistant, in Polish and English | cases, scorers or model profiles change |
-| [local-llm-bench-results](https://github.com/michal-konik-human/local-llm-bench-results) | **Data**: everything measured on the reference rig, quality next to speed | a benchmark run finishes |
-| [radeon-r9700-rocm-notes](https://github.com/michal-konik-human/radeon-r9700-rocm-notes) | **Platform**: making 4× Radeon AI PRO R9700 + ROCm work (setup, traps, monitoring, tuning) | hardware, drivers or the serving stack change, or a new trap is found |
+| [local-llm-perf-bench](https://github.com/michal-koniu/local-llm-perf-bench) | **Tool**: how fast a model runs (llama.cpp, any GGUF, 1–n GPUs) | the way speed is measured changes |
+| [local-llm-quality-bench](https://github.com/michal-koniu/local-llm-quality-bench) | **Tool**: how good a model is as an agent/assistant, in Polish and English | cases, scorers or model profiles change |
+| [local-llm-bench-results](https://github.com/michal-koniu/local-llm-bench-results) | **Data**: everything measured on the reference rig, quality next to speed | a benchmark run finishes |
+| [radeon-r9700-rocm-notes](https://github.com/michal-koniu/radeon-r9700-rocm-notes) | **Platform**: making 4× Radeon AI PRO R9700 + ROCm work (setup, traps, monitoring, tuning) | hardware, drivers or the serving stack change, or a new trap is found |
 
 ## Why this exists
 
@@ -126,7 +126,7 @@ Requirements: Linux, ROCm with `amd-smi` and `rocminfo`, a built `llama-bench`, 
 No third-party Python packages.
 
 ```bash
-git clone https://github.com/michal-konik-human/local-llm-perf-bench.git
+git clone https://github.com/michal-koniu/local-llm-perf-bench.git
 cd local-llm-perf-bench
 sudo ln -s "$PWD/bench-model" /usr/local/bin/bench-model   # optional, for PATH
 ```
@@ -179,7 +179,7 @@ and run `bench-model --list-new`.
 
 Real multi-GPU configs for 2, 3 and 4 cards (gpt-oss-120b, Laguna S 2.1, Qwen3-235B, DeepSeek-V4-Flash
 with tuned tensor splits) are in the results repo under
-[`perf/configs/`](https://github.com/michal-konik-human/local-llm-bench-results/tree/main/perf/configs).
+[`perf/configs/`](https://github.com/michal-koniu/local-llm-bench-results/tree/main/perf/configs).
 
 `--dry-run` prints how many measurement processes the matrix implies. Check it — matrices
 multiply, and it's easy to accidentally order three hours of work.
@@ -268,9 +268,9 @@ the alternative is variance you never notice.
 DeepSeek processes a 4k prompt **twice as fast** as a 512-token one; Qwen3 gets slightly
 slower. The prompt-batch size (`--ubatch-size`) is worth up to **+57 %** prefill for one
 model and **−58 %** for another — see the full table in
-[local-llm-bench-results/perf](https://github.com/michal-konik-human/local-llm-bench-results/blob/main/perf/all-benchmark-results.md).
+[local-llm-bench-results/perf](https://github.com/michal-koniu/local-llm-bench-results/blob/main/perf/all-benchmark-results.md).
 
-More hardware-specific findings: [radeon-r9700-rocm-notes](https://github.com/michal-konik-human/radeon-r9700-rocm-notes).
+More hardware-specific findings: [radeon-r9700-rocm-notes](https://github.com/michal-koniu/radeon-r9700-rocm-notes).
 
 ---
 
@@ -291,7 +291,7 @@ Stated plainly, because it matters:
 
 - **TTFT (time to first token)** — arguably *the* metric for interactive agents.
   `llama-bench` measures throughput. This is the most important missing piece.
-- **Answer quality.** That is what [local-llm-quality-bench](https://github.com/michal-konik-human/local-llm-quality-bench)
+- **Answer quality.** That is what [local-llm-quality-bench](https://github.com/michal-koniu/local-llm-quality-bench)
   is for: the same models, served the same way, graded on agent and assistant tasks in PL and EN.
 - **Concurrent request behaviour** — matters as soon as more than one person uses the box.
 - **Tensor-parallel / vLLM.** The harness drives `llama-bench` (layer split). vLLM TP on

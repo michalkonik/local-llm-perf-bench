@@ -28,7 +28,7 @@ the most valuable contributions are the ones that test that promise on hardware 
 ## Development
 
 ```bash
-git clone https://github.com/michal-konik-human/local-llm-perf-bench.git && cd local-llm-perf-bench
+git clone https://github.com/michal-koniu/local-llm-perf-bench.git && cd local-llm-perf-bench
 ./bench.py configs/single-gpu.json --dry-run     # validates the config and prints the plan
 ```
 
