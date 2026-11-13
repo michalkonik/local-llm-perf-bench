@@ -1,10 +1,23 @@
-# llm-bench-harness
+# local-llm-perf-bench
 
-A benchmark harness for local LLM inference that records **the conditions, not just the
-numbers** — and tells you when a result is not trustworthy.
+**How fast does an open model really run on your own GPUs, and under which exact conditions?**
 
-Built for a single-node AMD/ROCm box running `llama.cpp` — one GPU or several (developed on
-4× Radeon AI PRO R9700). Driven either by you or by a local agent.
+A performance benchmark for local LLM inference that records **the conditions, not just the
+numbers**, and tells you when a result is not trustworthy. Works with **any GGUF model**
+`llama.cpp` can load (dense or MoE, any quant, one shard or many), on one GPU or several.
+It was developed on 4× Radeon AI PRO R9700 (128 GB VRAM) and can be driven by you or by a
+local agent.
+
+> **Speed is half the answer.** Its sibling, **[local-llm-quality-bench](https://github.com/michal-koniu/local-llm-quality-bench)**,
+> measures how *good* the same models are as agents and assistants in Polish and English:
+> tool calling, multi-step tasks, instruction following and writing. Together they answer
+> *which model, at which settings, for which job*.
+>
+> **Results** from the reference rig live in their own repo,
+> **[local-llm-bench-results](https://github.com/michal-koniu/local-llm-bench-results)**. This repo is
+> the tool: point it at your own GPUs and models and keep your own results.
+>
+> *(Renamed from `llm-bench-harness` in October 2026; old links redirect.)*
 
 ```bash
 bench-model --list-new       # which models have no result yet
@@ -13,6 +26,17 @@ cat results/all-benchmark-results.md         # every model ever measured, side b
 ```
 
 ---
+
+## Project map
+
+Four repos, one job each:
+
+| Repo | What it is | It changes when… |
+|---|---|---|
+| [local-llm-perf-bench](https://github.com/michal-koniu/local-llm-perf-bench) | **Tool**: how fast a model runs (llama.cpp, any GGUF, 1–n GPUs) | the way speed is measured changes |
+| [local-llm-quality-bench](https://github.com/michal-koniu/local-llm-quality-bench) | **Tool**: how good a model is as an agent/assistant, in Polish and English | cases, scorers or model profiles change |
+| [local-llm-bench-results](https://github.com/michal-koniu/local-llm-bench-results) | **Data**: everything measured on the reference rig, quality next to speed | a benchmark run finishes |
+| [radeon-r9700-rocm-notes](https://github.com/michal-koniu/radeon-r9700-rocm-notes) | **Platform**: making 4× Radeon AI PRO R9700 + ROCm work (setup, traps, monitoring, tuning) | hardware, drivers or the serving stack change, or a new trap is found |
 
 ## Why this exists
 
@@ -102,8 +126,8 @@ Requirements: Linux, ROCm with `amd-smi` and `rocminfo`, a built `llama-bench`, 
 No third-party Python packages.
 
 ```bash
-git clone https://github.com/michal-konik-human/llm-bench-harness.git
-cd llm-bench-harness
+git clone https://github.com/michal-koniu/local-llm-perf-bench.git
+cd local-llm-perf-bench
 sudo ln -s "$PWD/bench-model" /usr/local/bin/bench-model   # optional, for PATH
 ```
 
@@ -111,6 +135,7 @@ Everything hardware-specific is auto-detected. Overrides if you need them:
 
 | Variable | Default |
 |---|---|
+| `LLM_PERF_RESULTS` | `./results` (git-ignored). Where runs and the shared table go; point it at your own results repo |
 | `RIG_GPU_INDEX` | `0` — GPU for configs without `HIP_VISIBLE_DEVICES` |
 | `RIG_MODELS_DIR` | `~/models` |
 | `LLAMA_CPP_DIR` | `~/llama.cpp` |
@@ -152,10 +177,17 @@ and run `bench-model --list-new`.
 | `context-scaling.json` | How does throughput fall off with context length? |
 | `multi-gpu-EXAMPLE.json` | Template for multiple GPUs (read the comment first) |
 
+Real multi-GPU configs for 2, 3 and 4 cards (gpt-oss-120b, Laguna S 2.1, Qwen3-235B, DeepSeek-V4-Flash
+with tuned tensor splits) are in the results repo under
+[`perf/configs/`](https://github.com/michal-koniu/local-llm-bench-results/tree/main/perf/configs).
+
 `--dry-run` prints how many measurement processes the matrix implies. Check it — matrices
 multiply, and it's easy to accidentally order three hours of work.
 
 ### Output
+
+`results/` below means `$LLM_PERF_RESULTS` (default `./results` in this repo, git-ignored, so your
+measurements never end up in a pull request by accident).
 
 ```
 results/<timestamp>/
@@ -231,13 +263,14 @@ the alternative is variance you never notice.
 | Model | Size | prefill `pp512` | prefill `pp4096` | decode `tg128` | Spread |
 |---|---|---:|---:|---:|---:|
 | Qwen3-235B-A22B UD-Q3_K_XL (MoE 128/8) | 96.6 GiB | 619 | 583 | **32.7** | ≤ 1.0 % |
-| DeepSeek-V4-Flash UD-IQ3_XXS (MoE 256/6) | 95.9 GiB | 517 | **1020** | **24.0** | ≤ 2.7 % |
+| DeepSeek-V4-Flash-0731 UD-IQ3_XXS (MoE 256/6) | 97.1 GiB | 560 | **1089** | **24.7** | ≤ 1.0 % (tg128 8.3 %) |
 
 DeepSeek processes a 4k prompt **twice as fast** as a 512-token one; Qwen3 gets slightly
 slower. The prompt-batch size (`--ubatch-size`) is worth up to **+57 %** prefill for one
-model and **−58 %** for another — see `results/all-benchmark-results.md`.
+model and **−58 %** for another — see the full table in
+[local-llm-bench-results/perf](https://github.com/michal-koniu/local-llm-bench-results/blob/main/perf/all-benchmark-results.md).
 
-More hardware-specific findings: [radeon-r9700-rocm-notes](https://github.com/michal-konik-human/radeon-r9700-rocm-notes).
+More hardware-specific findings: [radeon-r9700-rocm-notes](https://github.com/michal-koniu/radeon-r9700-rocm-notes).
 
 ---
 
@@ -249,6 +282,7 @@ More hardware-specific findings: [radeon-r9700-rocm-notes](https://github.com/mi
 | [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md) | What is actually being measured, and why |
 | [`docs/MANUAL.md`](docs/MANUAL.md) | The same measurement by hand, every flag explained |
 | [`docs/AGENT-PLAYBOOK.md`](docs/AGENT-PLAYBOOK.md) | System prompt for an orchestrating agent |
+| [`server-bench/`](server-bench/README.md) | Speed through llama-server/llama-swap: speculative decoding, several agents at once |
 
 ---
 
@@ -258,15 +292,30 @@ Stated plainly, because it matters:
 
 - **TTFT (time to first token)** — arguably *the* metric for interactive agents.
   `llama-bench` measures throughput. This is the most important missing piece.
-- **Answer quality** — use `lm-evaluation-harness` against `llama-server`.
-- **Concurrent request behaviour** — matters as soon as more than one person uses the box.
-- **Tensor-parallel / vLLM.** The harness drives `llama-bench` (layer split). vLLM TP on
-  RDNA4 needs `NCCL_PROTO=Simple` and more — see the notes repo.
+- **Answer quality.** That is what [local-llm-quality-bench](https://github.com/michal-koniu/local-llm-quality-bench)
+  is for: the same models, served the same way, graded on agent and assistant tasks in PL and EN.
+- **Concurrent request behaviour** — only partly: [`server-bench/`](server-bench/README.md) measures 1, 2 and 4 simultaneous agents through llama-server, without the conditions record of `bench.py`.
+- **Tensor-parallel / vLLM.** The harness drives `llama-bench` (layer split). llama.cpp's own experimental `--split-mode tensor` and speculative decoding can be
+  measured through the server with [`server-bench/`](server-bench/README.md). vLLM TP on RDNA4 needs `NCCL_PROTO=Simple` and more — see the notes repo.
 - **Non-AMD hardware.** Telemetry goes through `amd-smi`. The structure would port to
   `nvidia-smi` without much trouble; I don't have the hardware to test it.
 
-PRs and corrections welcome — especially if you have numbers that contradict mine.
+## Roadmap: help wanted
+
+- [ ] **TTFT and concurrency**: time to first token and behaviour with several simultaneous requests (llama-server based).
+- [ ] **NVIDIA and Apple Silicon telemetry**: the structure ports to `nvidia-smi` / `powermetrics`; I only have AMD cards.
+- [ ] **vLLM / tensor-parallel backend** next to llama-bench.
+- [ ] **Your numbers.** Run `bench-model` on your hardware and share the `report.md`: contradicting numbers are the most useful.
+
+## Contributing
+
+Contributions are welcome: bug reports, ports to other GPUs, new test configs, and especially results that
+contradict mine. See [CONTRIBUTING.md](CONTRIBUTING.md). Issue templates exist for bugs and for sharing results.
+
+## Citation
+
+GitHub's "Cite this repository" button uses [CITATION.cff](CITATION.cff).
 
 ## License
 
-MIT
+MIT. Use it, fork it, build on it.
